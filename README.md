@@ -1,101 +1,234 @@
-# Exp-04-Spring-Boot-with-REST-API-and-Hibernate-Integration
+# EXPERIMENT – 04
 
-## AIM:
-To develop a Spring Boot application to store and retrieve data from a Movies database using Object Relational Mapping (ORM) with Hibernate and expose it via REST APIs.
+## Spring Boot with REST API and Hibernate Integration
 
-## ALGORITHM:
-Create Spring Boot project with dependencies:
+### AIM
 
-Spring Web
+To develop a Spring Boot application to store and retrieve data from a Movies database using Object Relational Mapping (ORM) with Hibernate and expose the data through REST APIs.
 
-Spring Data JPA
+### ALGORITHM
 
-H2 or MySQL Database
+1. Create a Spring Boot project using Spring Initializr.
+2. Add the following dependencies:
+   - Spring Web
+   - Spring Data JPA
+   - H2 Database or MySQL Driver
+3. Configure the database connection and JPA settings in the `application.properties` file.
+4. Create a Movie entity class with the following fields:
+   - id
+   - title
+   - genre
+   - year
+   - rating
+5. Create a `MovieRepository` interface extending `JpaRepository`.
+6. Create a `MovieController` class to handle REST API requests.
+7. Implement the following CRUD operations:
+   - GET `/movies/get` – Retrieve all movies.
+   - GET `/movies/{id}` – Retrieve a movie by ID.
+   - POST `/movies/add` – Add a new movie.
+   - PUT `/movies/{id}` – Update an existing movie.
+   - DELETE `/movies/{id}` – Delete a movie by ID.
+8. Run the Spring Boot application.
+9. Test all REST API endpoints using Postman or a browser.
 
-Configure application.properties with DB connection and JPA settings.
+### PROGRAM CODE
 
-Create Movie entity with fields like id, title, genre, rating, and year.
+**1. application.properties**
 
-Create MovieRepository interface extending JpaRepository.
-
-Create MovieController to define REST endpoints for CRUD operations:
-
-GET /movies
-
-GET /movies/{id}
-
-POST /movies
-
-PUT /movies/{id}
-
-DELETE /movies/{id}
-
-
-## PROGRAM CODE (Main Files):
-### application.properties
-spring.datasource.url=jdbc:h2:mem:testdb
-spring.datasource.driverClassName=org.h2.Driver
+```properties
+spring.application.name=Exp4
+server.port=8082
 spring.jpa.hibernate.ddl-auto=update
+spring.datasource.url=jdbc:mysql://localhost:3306/movies
+spring.datasource.username=root
+spring.datasource.password=****
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.jpa.show-sql=true
-### Movie.java
+```
+
+**2. Movie.java**
+
+```java
+package com.sridhar.exp4.Entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     private String title;
     private String genre;
-    private int year;
-    private double rating;
-
-    // Getters and Setters
+    private Integer year;
+    private Double rating;
 }
-### MovieRepository.java
-java
-Copy
-Edit
-public interface MovieRepository extends JpaRepository<Movie, Long> {}
-### MovieController.java
+```
+
+**3. MovieRepository.java**
+
+```java
+package com.sridhar.exp4.Repository;
+
+import com.sridhar.exp4.Entity.Movie;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MovieRepository extends JpaRepository<Movie,Integer> {
+
+}
+```
+
+**4. MovieController.java**
+
+```java
+package com.sridhar.exp4.Controller;
+
+import com.sridhar.exp4.Entity.Movie;
+import com.sridhar.exp4.Service.MovieService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/movies")
 public class MovieController {
     @Autowired
+    private MovieService service;
+
+    @GetMapping("/get")
+    public List<Movie> getAllMovies(){
+        return service.getAllMovies();
+    }
+
+    @PostMapping("/add")
+    public String addMovie(@RequestBody Movie movie){
+        service.addMovie(movie);
+        return "Movie Added Successfully🎥🎥";
+    }
+
+    @GetMapping("/{id}")
+    public Optional<Movie> getMovie(@PathVariable int id){
+        return service.getMovie(id);
+    }
+
+    @PutMapping("/{id}")
+    public String updateMovie(@PathVariable int id,@RequestBody Movie movie){
+        service.updateMovie(id,movie);
+        return "Movie Updated Successfully.📽️🎦🍿";
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteMovie(@PathVariable int id){
+        service.deleteMovie(id);
+        return "Movie with ID " + id + " deleted successfully!";
+    }
+}
+```
+
+**5. MovieService.java**
+
+```java
+package com.sridhar.exp4.Service;
+
+import com.sridhar.exp4.Entity.Movie;
+import com.sridhar.exp4.Repository.MovieRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class MovieService {
+    @Autowired
     private MovieRepository repo;
 
-    @GetMapping
     public List<Movie> getAllMovies() {
         return repo.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
-        return repo.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public void addMovie(Movie movie) {
+        repo.save(movie);
     }
 
-    @PostMapping
-    public Movie addMovie(@RequestBody Movie movie) {
-        return repo.save(movie);
+    public Optional<Movie> getMovie(int id) {
+        return repo.findById(id);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie movieDetails) {
-        return repo.findById(id).map(movie -> {
-            movie.setTitle(movieDetails.getTitle());
-            movie.setGenre(movieDetails.getGenre());
-            movie.setYear(movieDetails.getYear());
-            movie.setRating(movieDetails.getRating());
-            return ResponseEntity.ok(repo.save(movie));
-        }).orElse(ResponseEntity.notFound().build());
+    public void updateMovie(int id, Movie movie) {
+        Movie movie1=repo.findById(id).orElseThrow();
+        movie1.setTitle(movie.getTitle());
+        movie1.setGenre(movie.getGenre());
+        movie1.setYear(movie.getYear());
+        movie1.setRating(movie.getRating());
+        repo.save(movie1);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
-        return repo.findById(id).map(movie -> {
-            repo.delete(movie);
-            return ResponseEntity.ok().build();
-        }).orElse(ResponseEntity.notFound().build());
+    public void deleteMovie(int id) {
+        repo.deleteById(id);
     }
 }
+```
+
+**6. Main Application Class – MovieApplication.java**
+
+```java
+package com.sridhar.exp4;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Exp4Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Exp4Application.class, args);
+    }
+}
+```
+
+### REST API ENDPOINTS
+
+| HTTP Method | Endpoint | Operation |
+|---|---|---|
+| GET | `/movies/get` | Get all movies |
+| GET | `/movies/{id}` | Get movie by ID |
+| POST | `/movies/add` | Add a new movie |
+| PUT | `/movies/{id}` | Update movie |
+| DELETE | `/movies/{id}` | Delete movie |
+
+### output
+
+**GET movies/get:**
+
+
+**GET movies/{id}:**
+
+
+
+**POST movies/add:**
+
+
+
+**PUT movies/{id}:**
+
+
+
+**DELETE movies/{id}:**
+
+
+
+### RESULT
+
+Thus, the Spring Boot application was successfully created to store, retrieve, update, and delete movie details using Hibernate ORM and REST APIs.
