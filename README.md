@@ -211,21 +211,26 @@ public class Exp4Application {
 ### output
 
 **GET movies/get:**
+<img width="1917" height="1075" alt="Screenshot 2026-11-20 235203" src="https://github.com/user-attachments/assets/98a9dfbb-a63a-417b-9841-290e230a662c" />
 
 
 **GET movies/{id}:**
 
+<img width="1917" height="1078" alt="Screenshot 2026-11-20 235300" src="https://github.com/user-attachments/assets/7d107cf7-adb7-42c4-8a9e-355a99c61910" />
 
 
 **POST movies/add:**
 
+<img width="1917" height="1078" alt="Screenshot 2026-11-20 235632" src="https://github.com/user-attachments/assets/6273be94-5cb5-48eb-8e9c-b9afe9d52175" />
 
 
 **PUT movies/{id}:**
 
+<img width="1917" height="1078" alt="Screenshot 2026-11-20 235836" src="https://github.com/user-attachments/assets/d1586a45-e4e2-4148-971f-34e7fe563cb0" />
 
 
 **DELETE movies/{id}:**
+<img width="1917" height="1078" alt="Screenshot 2026-11-21 000024" src="https://github.com/user-attachments/assets/44e53bae-11e4-4a15-8f5d-f78cbc3bd690" />
 
 
 
